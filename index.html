@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="经典计算机算法的交互式可视化实验室">
+  <meta name="theme-color" content="#08111d">
+  <title>Algorithm Atlas · 算法可视化实验室</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="#/" aria-label="返回算法选择首页">
+      <span class="brand-mark">A</span>
+      <span>Algorithm <b>Atlas</b></span>
+    </a>
+    <nav class="header-nav" aria-label="主导航">
+      <a href="#/" id="nav-home">算法目录</a>
+      <a href="https://github.com/Zqzqzqzqzqzqz/algorithm" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main id="app" tabindex="-1"></main>
+
+  <footer>
+    <span>Algorithm Atlas</span>
+    <span>把抽象过程，变成看得见的轨迹。</span>
+  </footer>
+
+  <template id="home-template">
+    <section class="hero">
+      <div class="eyebrow"><i></i> INTERACTIVE COMPUTER SCIENCE</div>
+      <h1>看见算法<br><em>如何思考。</em></h1>
+      <p>输入你的数据，逐步观察经典算法的每一次比较、旋转、分裂与剪枝。</p>
+      <a class="primary-btn" href="#catalog">开始探索 <span>↓</span></a>
+      <div class="hero-orbit" aria-hidden="true">
+        <span class="orbit orbit-a"></span><span class="orbit orbit-b"></span>
+        <span class="orbit-node n1"></span><span class="orbit-node n2"></span><span class="orbit-node n3"></span>
+        <strong>f(n)</strong>
+      </div>
+    </section>
+    <section class="catalog" id="catalog">
+      <div class="section-heading">
+        <div><span>01 / COLLECTION</span><h2>选择一个算法</h2></div>
+        <p>所有演示都在浏览器中运行，你可以自由修改输入并从头实验。</p>
+      </div>
+      <div class="algorithm-grid" id="algorithm-grid"></div>
+    </section>
+    <section class="principles">
+      <div><span>01</span><h3>自由输入</h3><p>用自己的数据验证边界情况。</p></div>
+      <div><span>02</span><h3>逐步执行</h3><p>按你的节奏查看状态变化。</p></div>
+      <div><span>03</span><h3>即时反馈</h3><p>关键节点与路径清晰高亮。</p></div>
+    </section>
+  </template>
+
+  <template id="lab-template">
+    <section class="lab-shell">
+      <div class="lab-topbar">
+        <a href="#/" class="back-link">← 返回目录</a>
+        <span id="lab-index"></span>
+      </div>
+      <div class="lab-heading">
+        <div><div class="eyebrow" id="lab-category"></div><h1 id="lab-title"></h1></div>
+        <p id="lab-description"></p>
+      </div>
+      <div id="lab-content"></div>
+    </section>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
