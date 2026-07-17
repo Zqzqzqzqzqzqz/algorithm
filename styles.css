@@ -54,7 +54,6 @@ main { min-height: calc(100vh - 150px); }
 .section-heading p { color: var(--muted); max-width: 410px; line-height: 1.8; font-size: 14px; }
 .algorithm-grid { display: grid; grid-template-columns: repeat(12, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
 .algo-card { grid-column: span 4; min-height: 320px; padding: 28px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; position: relative; overflow: hidden; transition: .25s; }
-.algo-card:nth-child(4), .algo-card:nth-child(5) { grid-column: span 6; }
 .algo-card:hover { background: var(--cyan-soft); }
 .algo-card .number { font: 11px "DM Mono"; color: var(--muted); }
 .algo-icon { height: 125px; display: grid; place-items: center; color: var(--cyan); }
@@ -98,6 +97,7 @@ footer { border-top: 1px solid var(--line); min-height: 82px; display: flex; jus
 .canvas-wrap svg { min-width: 680px; width: 100%; height: 500px; overflow: visible; }
 .edge { stroke: rgba(185,220,225,.25); stroke-width: 1.5; }.edge.active { stroke: var(--cyan); stroke-width: 3; }.edge.pruned { stroke: var(--coral); stroke-dasharray: 4 5; opacity: .55; }
 .tree-node circle, .graph-node circle { stroke: #75909b; stroke-width: 1.2; fill: var(--black-node); transition: .25s; }.tree-node.red circle { fill: #b4473b; stroke: var(--coral); }.tree-node text, .graph-node text { fill: var(--ink); text-anchor: middle; dominant-baseline: middle; font: 12px "DM Mono"; pointer-events: none; }.tree-node.active circle, .graph-node.active circle { fill: #0c625f; stroke: var(--cyan); stroke-width: 3; }.tree-node.pruned { opacity: .27; }.tree-node.pruned circle { stroke-dasharray: 3 3; }
+.graph-node.visited circle { fill: rgba(119,231,223,.24); stroke: var(--cyan); }.graph-node.frontier circle { stroke: var(--yellow); stroke-dasharray: 4 3; }.graph-node.active circle { fill: #0c625f; stroke: var(--cyan); stroke-width: 3; }
 .node-label { font: 10px "DM Mono"; fill: var(--muted); text-anchor: middle; }
 .leaf-link { stroke: var(--cyan); stroke-dasharray: 4 4; opacity: .6; }
 .bplus-node rect { fill: #111f2d; stroke: #6e8790; }.bplus-node.leaf rect { fill: var(--cyan-soft); stroke: var(--cyan); }.bplus-node text { fill: var(--ink); font: 11px "DM Mono"; text-anchor: middle; dominant-baseline: middle; }
@@ -107,10 +107,11 @@ footer { border-top: 1px solid var(--line); min-height: 82px; display: flex; jus
 .bar-chart { width: 100%; height: 440px; display: flex; align-items: end; gap: clamp(3px, 1vw, 12px); padding: 30px 15px 40px; border-bottom: 1px solid var(--line); }
 .bar-item { flex: 1; min-width: 18px; max-width: 68px; background: rgba(119,231,223,.32); border-top: 2px solid var(--cyan); position: relative; transition: height .25s, background .25s; }.bar-item.active { background: var(--coral); border-color: #ffae9e; }.bar-item.sorted { background: rgba(119,231,223,.65); }.bar-item span { position: absolute; top: -26px; width: 100%; text-align: center; font: 10px "DM Mono"; color: var(--ink); }
 .distance-badge { fill: var(--cyan); }.distance-text { fill: #07111d !important; font-size: 9px !important; }
+.traversal-stage { width: 100%; min-width: 680px; }.traversal-stage svg { min-width: 0; height: 440px; }.frontier-strip { min-height: 58px; display: flex; align-items: center; gap: 16px; padding: 10px 18px; border-top: 1px solid var(--line); font: 11px "DM Mono"; color: var(--muted); }.frontier-strip > div { display: flex; gap: 7px; align-items: center; }.frontier-strip b { min-width: 30px; padding: 7px 9px; text-align: center; color: var(--ink); border: 1px solid var(--yellow); font-weight: 400; }.frontier-strip em { font-style: normal; }
 .empty-state { color: var(--muted); text-align: center; font: 13px "DM Mono"; line-height: 2; }
 @media (max-width: 900px) {
   .hero { min-height: 620px; padding-top: 105px; }.hero-orbit { opacity: .27; right: -12vw; top: 145px; width: 55vw; }
-  .algo-card { grid-column: span 6; }.algo-card:nth-child(4), .algo-card:nth-child(5) { grid-column: span 6; }
+  .algo-card { grid-column: span 6; }
   .lab-heading, .section-heading { align-items: start; flex-direction: column; }.workspace { grid-template-columns: 1fr; }.control-panel { border-right: 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(2, 1fr); }.control-panel h2, .status-box { grid-column: 1 / -1; }.status-box { margin-top: 0; }.canvas-wrap { min-height: 470px; }
 }
 @media (max-width: 600px) {

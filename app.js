@@ -5,7 +5,10 @@ const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const algorithms = [
   { id: "red-black-tree", title: "红黑树", en: "RED–BLACK TREE", category: "平衡搜索树", description: "通过颜色约束与旋转，让查找、插入和删除稳定在 O(log n)。", icon: "tree" },
   { id: "b-plus-tree", title: "B+ 树", en: "B+ TREE", category: "多路搜索树", description: "数据库索引的经典结构。观察节点分裂、层级增长与叶节点链表。", icon: "bplus" },
-  { id: "minimax", title: "Minimax 剪枝", en: "MINIMAX + αβ", category: "博弈搜索", description: "在对抗搜索树中传播最优值，并用 Alpha–Beta 跳过无效分支。", icon: "minimax" },
+  { id: "dfs", title: "深度优先搜索", en: "DEPTH-FIRST SEARCH", category: "图遍历", description: "沿一个分支不断深入，再回溯探索其他路径，观察栈的实时变化。", icon: "graph" },
+  { id: "bfs", title: "广度优先搜索", en: "BREADTH-FIRST SEARCH", category: "图遍历", description: "从起点逐层向外扩展，观察队列与最少边数路径的形成过程。", icon: "graph" },
+  { id: "minimax", title: "Minimax", en: "MINIMAX", category: "博弈搜索", description: "完整遍历对抗搜索树，在 MAX 与 MIN 层之间逐级传播最优效用值。", icon: "minimax-plain" },
+  { id: "alpha-beta", title: "Alpha–Beta 剪枝", en: "ALPHA–BETA PRUNING", category: "博弈搜索", description: "保持 Minimax 结果不变，同时用 α、β 边界跳过不可能影响决策的分支。", icon: "minimax" },
   { id: "dijkstra", title: "Dijkstra 最短路", en: "DIJKSTRA", category: "图算法", description: "自定义带权图，查看距离松弛以及最短路径逐步确定的过程。", icon: "graph" },
   { id: "sorting", title: "排序实验室", en: "SORTING LAB", category: "排序算法", description: "比较冒泡、快速与归并排序，逐帧观察元素比较和位置变化。", icon: "sort" }
 ];
@@ -15,6 +18,7 @@ function iconSvg(type) {
   if (type === "tree") return `<svg viewBox="0 0 120 90" ${common}><path d="M60 14 31 43M60 14l30 29M31 43 17 73M31 43l16 30M90 43 74 73M90 43l16 30"/><circle cx="60" cy="14" r="8"/><circle cx="31" cy="43" r="8"/><circle cx="90" cy="43" r="8"/><circle cx="17" cy="73" r="7"/><circle cx="47" cy="73" r="7"/><circle cx="74" cy="73" r="7"/><circle cx="106" cy="73" r="7"/></svg>`;
   if (type === "bplus") return `<svg viewBox="0 0 120 90" ${common}><rect x="43" y="10" width="34" height="18"/><path d="M52 28 25 48M68 28l27 20"/><rect x="8" y="48" width="34" height="18"/><rect x="78" y="48" width="34" height="18"/><path stroke-dasharray="3 3" d="M42 57h36"/><path d="M19 52v10M31 52v10M89 52v10M101 52v10"/></svg>`;
   if (type === "minimax") return `<svg viewBox="0 0 120 90" ${common}><path d="M60 10 28 38M60 10l32 28M28 38 12 72M28 38l20 34M92 38 72 72M92 38l16 34"/><circle cx="60" cy="10" r="7"/><circle cx="28" cy="38" r="7"/><circle cx="92" cy="38" r="7"/><path stroke-dasharray="4 3" d="M68 32 102 78"/><text x="84" y="33" fill="currentColor" stroke="none" font-size="10">α β</text></svg>`;
+  if (type === "minimax-plain") return `<svg viewBox="0 0 120 90" ${common}><path d="M60 10 28 38M60 10l32 28M28 38 12 72M28 38l20 34M92 38 72 72M92 38l16 34"/><circle cx="60" cy="10" r="7"/><circle cx="28" cy="38" r="7"/><circle cx="92" cy="38" r="7"/><text x="60" y="14" fill="currentColor" stroke="none" text-anchor="middle" font-size="9">MAX</text><text x="28" y="42" fill="currentColor" stroke="none" text-anchor="middle" font-size="8">MIN</text><text x="92" y="42" fill="currentColor" stroke="none" text-anchor="middle" font-size="8">MIN</text></svg>`;
   if (type === "graph") return `<svg viewBox="0 0 120 90" ${common}><path d="M20 54 47 18l33 12 22 38-53 7zM20 54l60-24M47 18l2 57M49 75l53-7"/><circle cx="20" cy="54" r="6"/><circle cx="47" cy="18" r="6"/><circle cx="80" cy="30" r="6"/><circle cx="102" cy="68" r="6"/><circle cx="49" cy="75" r="6"/></svg>`;
   return `<svg viewBox="0 0 120 90" ${common}><path d="M13 73V54h12v19M34 73V22h12v51M55 73V41h12v32M76 73V12h12v61M97 73V31h12v42"/><path stroke-dasharray="4 4" d="M8 79h104"/></svg>`;
 }
@@ -39,7 +43,7 @@ function renderLab(algo) {
   $("#lab-category").textContent = algo.en;
   $("#lab-title").textContent = algo.title;
   $("#lab-description").textContent = algo.description;
-  const renderers = { "red-black-tree": renderRBTree, "b-plus-tree": renderBPlus, minimax: renderMinimax, dijkstra: renderDijkstra, sorting: renderSorting };
+  const renderers = { "red-black-tree": renderRBTree, "b-plus-tree": renderBPlus, dfs: root => renderTraversal(root, "dfs"), bfs: root => renderTraversal(root, "bfs"), minimax: root => renderGameSearch(root, false), "alpha-beta": root => renderGameSearch(root, true), dijkstra: renderDijkstra, sorting: renderSorting };
   renderers[algo.id]($("#lab-content"));
   window.scrollTo(0, 0);
 }
@@ -140,6 +144,23 @@ function drawBPlus(data, svg, active) {
 function makeGameTree(depth, branching, values) {
   let leaf = 0, id = 0; const build = d => { const n = { id:id++, depth:d, children:[], value:null, pruned:false }; if (d === depth) n.value = values[leaf++ % values.length]; else for(let i=0;i<branching;i++) n.children.push(build(d+1)); return n; }; return build(0);
 }
+function minimax(root, maximizing = true) {
+  const steps = [];
+  function visit(n, max) {
+    steps.push({type:"visit", id:n.id, text:`访问节点 ${n.id} · 当前为 ${max ? "MAX" : "MIN"} 层`});
+    if (!n.children.length) { steps.push({type:"value", id:n.id, value:n.value, text:`读取叶节点 ${n.id} 的效用值 ${n.value}`}); return n.value; }
+    let value = max ? -Infinity : Infinity;
+    for (const child of n.children) {
+      const childValue = visit(child, !max);
+      value = max ? Math.max(value, childValue) : Math.min(value, childValue);
+      steps.push({type:"update", id:n.id, value, text:`节点 ${n.id} 更新为 ${value}`});
+    }
+    n.value = value;
+    return value;
+  }
+  const result = visit(root, maximizing);
+  return {steps, result, pruned:new Set()};
+}
 function alphaBeta(root, maximizing = true) {
   const steps = [], pruned = new Set();
   function visit(n, alpha, beta, max) {
@@ -157,19 +178,65 @@ function alphaBeta(root, maximizing = true) {
   const result = visit(root,-Infinity,Infinity,maximizing); return {steps,result,pruned};
 }
 function fmt(v) { return v === Infinity ? "∞" : v === -Infinity ? "−∞" : v; }
-function renderMinimax(root) {
-  root.innerHTML = workspace(`<h2>SEARCH CONTROLS</h2><div class="field"><label for="mm-depth">搜索深度</label><select id="mm-depth"><option>2</option><option selected>3</option><option>4</option></select></div><div class="field"><label for="mm-branch">每层分支</label><select id="mm-branch"><option selected>2</option><option>3</option></select></div><div class="field"><label for="mm-values">叶节点值（逗号分隔）</label><textarea id="mm-values" rows="3">3, 5, 6, 9, 1, 2, 0, -1</textarea></div><div class="button-row"><button class="control-btn accent wide" id="mm-build">构建并运行</button></div><div class="status-box" id="mm-status"></div>`, `<span>MAX 从根节点开始</span><span class="step-controls"><button id="mm-prev">←</button><span id="mm-count">0 / 0</span><button id="mm-next">→</button><button id="mm-play">播放</button></span>`, `<svg id="mm-svg" role="img" aria-label="Minimax 搜索树"></svg>`);
+function renderGameSearch(root, pruning) {
+  const prefix = pruning ? "ab" : "mm";
+  const name = pruning ? "Alpha–Beta" : "Minimax";
+  root.innerHTML = workspace(`<h2>SEARCH CONTROLS</h2><div class="field"><label for="${prefix}-depth">搜索深度</label><select id="${prefix}-depth"><option>2</option><option selected>3</option><option>4</option></select></div><div class="field"><label for="${prefix}-branch">每层分支</label><select id="${prefix}-branch"><option selected>2</option><option>3</option></select></div><div class="field"><label for="${prefix}-values">叶节点值（逗号分隔）</label><textarea id="${prefix}-values" rows="3">3, 5, 6, 9, 1, 2, 0, -1</textarea></div><div class="button-row"><button class="control-btn accent wide" id="${prefix}-build">构建并运行</button></div><div class="status-box" id="${prefix}-status"></div>`, `<span>${pruning ? "α / β 边界搜索" : "完整搜索"} · MAX 从根节点开始</span><span class="step-controls"><button id="${prefix}-prev">←</button><span id="${prefix}-count">0 / 0</span><button id="${prefix}-next">→</button><button id="${prefix}-play">播放</button></span>`, `<svg id="${prefix}-svg" role="img" aria-label="${name} 搜索树"></svg>`);
   let tree, run, step = 0, timer;
-  const rebuild = () => { clearInterval(timer); const depth=Number($("#mm-depth").value), branch=Number($("#mm-branch").value); let values=$("#mm-values").value.split(/[,，\s]+/).map(Number).filter(Number.isFinite); if(!values.length) values=[0]; const total=Math.pow(branch,depth); while(values.length<total) values.push(Math.floor(Math.random()*19)-9); values=values.slice(0,total); $("#mm-values").value=values.join(", "); tree=makeGameTree(depth,branch,values); run=alphaBeta(tree); step=0; draw(); };
-  const draw = () => { const state=run.steps[Math.max(0,step-1)]; drawGameTree(tree,$("#mm-svg"),state,step===run.steps.length?run.pruned:new Set()); $("#mm-count").textContent=`${step} / ${run.steps.length}`; $("#mm-status").innerHTML=`<strong>最优值 ${run.result}</strong><br>${state?.text || "按下一步观察 Alpha–Beta 搜索"}`; };
-  $("#mm-next").onclick=()=>{step=Math.min(run.steps.length,step+1);draw();}; $("#mm-prev").onclick=()=>{step=Math.max(0,step-1);draw();};
-  $("#mm-play").onclick=()=>{ if(timer){clearInterval(timer);timer=null;$("#mm-play").textContent="播放";return;} $("#mm-play").textContent="暂停"; timer=setInterval(()=>{if(step>=run.steps.length){clearInterval(timer);timer=null;$("#mm-play").textContent="播放";return;}step++;draw();},520); };
-  $("#mm-build").onclick=rebuild; rebuild();
+  const rebuild = () => { clearInterval(timer); const depth=Number($(`#${prefix}-depth`).value), branch=Number($(`#${prefix}-branch`).value); let values=$(`#${prefix}-values`).value.split(/[,，\s]+/).map(Number).filter(Number.isFinite); if(!values.length) values=[0]; const total=Math.pow(branch,depth); while(values.length<total) values.push(Math.floor(Math.random()*19)-9); values=values.slice(0,total); $(`#${prefix}-values`).value=values.join(", "); tree=makeGameTree(depth,branch,values); run=pruning ? alphaBeta(tree) : minimax(tree); step=0; draw(); };
+  const draw = () => { const state=run.steps[Math.max(0,step-1)]; const finalPruned=step===run.steps.length?run.pruned:new Set(); drawGameTree(tree,$(`#${prefix}-svg`),state,finalPruned); $(`#${prefix}-count`).textContent=`${step} / ${run.steps.length}`; const saved=pruning?` · 剪去 ${run.pruned.size} 个节点`:""; $(`#${prefix}-status`).innerHTML=`<strong>最优值 ${run.result}${saved}</strong><br>${state?.text || `按下一步观察 ${name} 搜索`}`; };
+  $(`#${prefix}-next`).onclick=()=>{step=Math.min(run.steps.length,step+1);draw();}; $(`#${prefix}-prev`).onclick=()=>{step=Math.max(0,step-1);draw();};
+  $(`#${prefix}-play`).onclick=()=>{ if(timer){clearInterval(timer);timer=null;$(`#${prefix}-play`).textContent="播放";return;} $(`#${prefix}-play`).textContent="暂停"; timer=setInterval(()=>{if(step>=run.steps.length){clearInterval(timer);timer=null;$(`#${prefix}-play`).textContent="播放";return;}step++;draw();},520); };
+  $(`#${prefix}-build`).onclick=rebuild; rebuild();
 }
 function drawGameTree(root, svg, state, finalPruned) {
   svg.replaceChildren(); svg.setAttribute("viewBox","0 0 1050 500"); const levels=[], leaves=[]; const walk=(n,d=0)=>{(levels[d]||=[]).push(n);if(!n.children.length)leaves.push(n);n.children.forEach(c=>walk(c,d+1));};walk(root); const pos=new Map(); let li=0; const place=n=>{if(!n.children.length){pos.set(n,{x:45+li++*960/Math.max(1,leaves.length-1),y:55+n.depth*125});}else{n.children.forEach(place);pos.set(n,{x:n.children.reduce((s,c)=>s+pos.get(c).x,0)/n.children.length,y:55+n.depth*125});}};place(root);
   const pruned=state?.pruned||finalPruned||new Set(); pos.forEach((p,n)=>n.children.forEach(c=>{const q=pos.get(c);svg.append(svgEl("line",{x1:p.x,y1:p.y,x2:q.x,y2:q.y,class:`edge ${pruned.has(c.id)?"pruned":""}`}));}));
   pos.forEach((p,n)=>{const cls=`tree-node ${state?.id===n.id?"active":""} ${pruned.has(n.id)?"pruned":""}`;const g=svgEl("g",{class:cls,transform:`translate(${p.x} ${p.y})`});g.append(svgEl("circle",{r:18}),svgEl("text",{},n.value??"?"),svgEl("text",{class:"node-label",y:-29},n.depth%2===0?"MAX":"MIN"));svg.append(g);});
+}
+
+// --- DFS / BFS ---------------------------------------------------------------
+function parseTraversalEdges(text) {
+  const edges=[];
+  text.split(/[\n,，]+/).forEach(part=>{
+    const m=part.trim().match(/^([\w\u4e00-\u9fa5]+)\s*[-–>]\s*([\w\u4e00-\u9fa5]+)$/);
+    if(m && m[1]!==m[2]) edges.push({a:m[1],b:m[2]});
+  });
+  return edges;
+}
+function traversalSteps(edges,start,mode) {
+  const nodes=[...new Set(edges.flatMap(e=>[e.a,e.b]))];
+  if(!nodes.includes(start)) return {nodes,steps:[],order:[]};
+  const adjacency=Object.fromEntries(nodes.map(n=>[n,[]]));
+  edges.forEach(e=>{adjacency[e.a].push(e.b);adjacency[e.b].push(e.a);});
+  Object.values(adjacency).forEach(list=>list.sort());
+  const visited=new Set(), discovered=new Set([start]), frontier=[start], steps=[], order=[];
+  while(frontier.length){
+    const node=mode==="dfs"?frontier.pop():frontier.shift();
+    if(visited.has(node)) continue;
+    visited.add(node); order.push(node);
+    steps.push({node,visited:new Set(visited),frontier:[...frontier],order:[...order],text:`访问 ${node}，序列：${order.join(" → ")}`});
+    const neighbors=mode==="dfs"?[...adjacency[node]].reverse():adjacency[node];
+    neighbors.forEach(next=>{if(!discovered.has(next)){discovered.add(next);frontier.push(next);steps.push({node,next,edge:[node,next],visited:new Set(visited),frontier:[...frontier],order:[...order],text:`发现 ${next}，加入${mode==="dfs"?"栈":"队列"}`});}});
+  }
+  return {nodes,steps,order};
+}
+function renderTraversal(root,mode){
+  const upper=mode.toUpperCase(), chinese=mode==="dfs"?"深度优先":"广度优先", structure=mode==="dfs"?"栈":"队列";
+  root.innerHTML=workspace(`<h2>GRAPH CONTROLS</h2><div class="field"><label for="${mode}-edges">边（A-B，用逗号分隔）</label><textarea id="${mode}-edges" rows="7">A-B, A-C, B-D, B-E, C-F, C-G, E-H, F-I</textarea></div><div class="field"><label for="${mode}-start">起点</label><input id="${mode}-start" value="A" maxlength="8"></div><div class="button-row"><button class="control-btn accent wide" id="${mode}-run">开始遍历</button></div><div class="status-box" id="${mode}-status"></div>`,`<span>${upper} · ${structure}驱动</span><span class="step-controls"><button id="${mode}-prev">←</button><span id="${mode}-count">0 / 0</span><button id="${mode}-next">→</button><button id="${mode}-play">播放</button></span>`,`<div class="traversal-stage"><svg id="${mode}-svg" role="img" aria-label="${chinese}搜索图"></svg><div class="frontier-strip"><span>${structure}</span><div id="${mode}-frontier"></div></div></div>`);
+  let edges,run,step=0,timer;
+  const rebuild=()=>{clearInterval(timer);timer=null;edges=parseTraversalEdges($(`#${mode}-edges`).value);run=traversalSteps(edges,$(`#${mode}-start`).value.trim(),mode);step=0;draw();};
+  const draw=()=>{const state=run.steps[Math.max(0,step-1)];drawTraversalGraph(edges,run.nodes,$(`#${mode}-svg`),state);$(`#${mode}-count`).textContent=`${step} / ${run.steps.length}`;$(`#${mode}-frontier`).innerHTML=(state?.frontier||[]).map(n=>`<b>${n}</b>`).join("")||"<em>空</em>";$(`#${mode}-status`).innerHTML=`<strong>${chinese}搜索</strong><br>${state?.text||"按下一步观察搜索过程"}`;};
+  $(`#${mode}-next`).onclick=()=>{step=Math.min(run.steps.length,step+1);draw();};$(`#${mode}-prev`).onclick=()=>{step=Math.max(0,step-1);draw();};
+  $(`#${mode}-play`).onclick=()=>{if(timer){clearInterval(timer);timer=null;$(`#${mode}-play`).textContent="播放";return;}$(`#${mode}-play`).textContent="暂停";timer=setInterval(()=>{if(step>=run.steps.length){clearInterval(timer);timer=null;$(`#${mode}-play`).textContent="播放";return;}step++;draw();},480);};
+  $(`#${mode}-run`).onclick=rebuild;rebuild();
+}
+function drawTraversalGraph(edges,nodes,svg,state){
+  svg.replaceChildren();svg.setAttribute("viewBox","0 0 900 440");
+  if(!nodes.length){svg.append(svgEl("text",{x:450,y:220,class:"node-label"},"没有识别到有效边，请使用 A-B 格式"));return;}
+  const pos=new Map();nodes.forEach((n,i)=>{const angle=-Math.PI/2+i*2*Math.PI/nodes.length;pos.set(n,{x:450+280*Math.cos(angle),y:220+160*Math.sin(angle)});});
+  edges.forEach(e=>{const a=pos.get(e.a),b=pos.get(e.b),active=state?.edge&&state.edge.includes(e.a)&&state.edge.includes(e.b);svg.append(svgEl("line",{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:`edge ${active?"active":""}`}));});
+  nodes.forEach(n=>{const p=pos.get(n),visited=state?.visited?.has(n),frontier=state?.frontier?.includes(n),g=svgEl("g",{class:`graph-node ${state?.node===n?"active":""} ${visited?"visited":""} ${frontier?"frontier":""}`,transform:`translate(${p.x} ${p.y})`});g.append(svgEl("circle",{r:24}),svgEl("text",{},n));if(visited){const index=state.order.indexOf(n)+1;g.append(svgEl("text",{class:"node-label",y:39},`#${index}`));}svg.append(g);});
 }
 
 // --- Dijkstra ---------------------------------------------------------------
