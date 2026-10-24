@@ -3,7 +3,7 @@ const $ = (selector, root = document) => root.querySelector(selector);
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
 const algorithms = [
-  { id: "sorting", title: "排序实验室", en: "SORTING LAB", category: "排序算法", description: "比较冒泡、快速、归并与插入排序，逐帧观察元素比较和位置变化。", icon: "sort" },
+  { id: "sorting", title: "排序实验室", en: "SORTING LAB", category: "排序算法", description: "比较冒泡、快速、归并、插入、选择与希尔排序，逐帧观察元素比较和位置变化。", icon: "sort" },
   { id: "red-black-tree", title: "红黑树", en: "RED–BLACK TREE", category: "平衡搜索树", description: "通过颜色约束与旋转，让查找、插入和删除稳定在 O(log n)。", icon: "tree" },
   { id: "b-plus-tree", title: "B+ 树", en: "B+ TREE", category: "多路搜索树", description: "数据库索引的经典结构。观察节点分裂、层级增长与叶节点链表。", icon: "bplus" },
   { id: "dfs", title: "深度优先搜索", en: "DEPTH-FIRST SEARCH", category: "图遍历", description: "沿一个分支不断深入，再回溯探索其他路径，观察栈的实时变化。", icon: "graph" },
@@ -247,7 +247,42 @@ function renderDijkstra(root){root.innerHTML=workspace(`<h2>GRAPH CONTROLS</h2><
 function drawGraph(edges,nodes,svg,state){svg.replaceChildren();svg.setAttribute("viewBox","0 0 900 500");if(!nodes.length){svg.append(svgEl("text",{x:450,y:250,class:"node-label"},"没有识别到有效边，请使用 A-B:4 格式"));return;}const pos=new Map();nodes.forEach((n,i)=>{const a=-Math.PI/2+i*2*Math.PI/nodes.length;pos.set(n,{x:450+280*Math.cos(a),y:250+190*Math.sin(a)});});edges.forEach(e=>{const a=pos.get(e.a),b=pos.get(e.b),active=state?.edge&&state.edge.includes(e.a)&&state.edge.includes(e.b);svg.append(svgEl("line",{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:`edge ${active?"active":""}`}));const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;svg.append(svgEl("circle",{cx:mx,cy:my,r:12,fill:"#0b1825",stroke:"rgba(185,220,225,.25)"}),svgEl("text",{x:mx,y:my,class:"node-label",dy:3},e.w));});nodes.forEach(n=>{const p=pos.get(n),g=svgEl("g",{class:`graph-node ${state?.node===n?"active":""}`,transform:`translate(${p.x} ${p.y})`});g.append(svgEl("circle",{r:24}),svgEl("text",{},n));const d=state?.dist?.[n];if(d!==undefined){g.append(svgEl("circle",{cx:25,cy:-23,r:13,class:"distance-badge"}),svgEl("text",{x:25,y:-23,class:"distance-text"},fmt(d)));}svg.append(g);});}
 
 // --- Sorting ----------------------------------------------------------------
-function sortingSteps(values,type){const a=[...values],steps=[{a:[...a],active:[],text:"初始序列"}];const snap=(active,text)=>steps.push({a:[...a],active,text});if(type==="bubble"){for(let i=0;i<a.length-1;i++)for(let j=0;j<a.length-i-1;j++){snap([j,j+1],`比较 ${a[j]} 与 ${a[j+1]}`);if(a[j]>a[j+1]){[a[j],a[j+1]]=[a[j+1],a[j]];snap([j,j+1],"交换相邻元素");}}}else if(type==="insertion"){
+function sortingSteps(values,type){const a=[...values],steps=[{a:[...a],active:[],text:"初始序列"}];const snap=(active,text)=>steps.push({a:[...a],active,text});if(type==="bubble"){for(let i=0;i<a.length-1;i++)for(let j=0;j<a.length-i-1;j++){snap([j,j+1],`比较 ${a[j]} 与 ${a[j+1]}`);if(a[j]>a[j+1]){[a[j],a[j+1]]=[a[j+1],a[j]];snap([j,j+1],"交换相邻元素");}}}else if(type==="selection"){
+    for(let i=0;i<a.length-1;i++){
+      let min=i;
+      snap([min],`寻找位置 ${i+1} 起的最小元素，当前最小值 ${a[min]}`);
+      for(let j=i+1;j<a.length;j++){
+        snap([min,j],`比较当前最小值 ${a[min]} 与 ${a[j]}`);
+        if(a[j]<a[min]){
+          min=j;
+          snap([min],`更新最小值为 ${a[min]}`);
+        }
+      }
+      if(min!==i){
+        [a[i],a[min]]=[a[min],a[i]];
+        snap([i,min],`交换，将最小值 ${a[i]} 放到位置 ${i+1}`);
+      }
+      snap([i],`位置 ${i+1} 已确定，前 ${i+1} 个元素已有序`);
+    }
+  }else if(type==="shell"){
+    for(let gap=Math.floor(a.length/2);gap>0;gap=Math.floor(gap/2)){
+      snap([],`当前增量 gap = ${gap}，对间隔 ${gap} 的元素进行插入排序`);
+      for(let i=gap;i<a.length;i++){
+        const key=a[i];
+        let j=i;
+        snap([i],`增量 ${gap}：选择待插入元素 ${key}`);
+        while(j>=gap){
+          snap([j-gap,j],`增量 ${gap}：比较 ${a[j-gap]} 与 ${key}`);
+          if(a[j-gap]<=key)break;
+          [a[j-gap],a[j]]=[a[j],a[j-gap]];
+          snap([j-gap,j],`增量 ${gap}：较大元素 ${a[j]} 右移，${key} 左移`);
+          j-=gap;
+        }
+        snap([j],`增量 ${gap}：将 ${key} 插入位置 ${j+1}`);
+      }
+      snap([],`增量 ${gap} 的分组排序完成`);
+    }
+  }else if(type==="insertion"){
     for(let i=1;i<a.length;i++){
       const key=a[i];
       let j=i;
@@ -262,7 +297,7 @@ function sortingSteps(values,type){const a=[...values],steps=[{a:[...a],active:[
       snap([j],`将 ${key} 插入位置 ${j+1}，前 ${i+1} 个元素已有序`);
     }
   }else if(type==="quick"){const q=(lo,hi)=>{if(lo>=hi)return;const pivot=a[hi];let i=lo;for(let j=lo;j<hi;j++){snap([j,hi],`将 ${a[j]} 与基准 ${pivot} 比较`);if(a[j]<pivot){[a[i],a[j]]=[a[j],a[i]];snap([i,j],"移动到基准左侧");i++;}}[a[i],a[hi]]=[a[hi],a[i]];snap([i],`基准 ${pivot} 就位`);q(lo,i-1);q(i+1,hi);};q(0,a.length-1);}else{const m=(lo,hi)=>{if(hi-lo<2)return;const mid=(lo+hi)>>1;m(lo,mid);m(mid,hi);const merged=[];let i=lo,j=mid;while(i<mid||j<hi)merged.push(j>=hi||(i<mid&&a[i]<=a[j])?a[i++]:a[j++]);merged.forEach((v,k)=>a[lo+k]=v);snap(Array.from({length:hi-lo},(_,k)=>lo+k),`合并区间 [${lo}, ${hi})`);};m(0,a.length);}steps.push({a:[...a],active:[],sorted:true,text:"排序完成"});return steps;}
-function renderSorting(root){root.innerHTML=workspace(`<h2>ARRAY CONTROLS</h2><div class="field"><label for="sort-values">数字序列</label><textarea id="sort-values" rows="4">42, 17, 8, 56, 33, 21, 64, 12, 48, 29</textarea></div><div class="field"><label for="sort-type">排序算法</label><select id="sort-type"><option value="quick">快速排序</option><option value="merge">归并排序</option><option value="bubble">冒泡排序</option><option value="insertion">插入排序</option></select></div><div class="button-row"><button class="control-btn accent" id="sort-build">载入</button><button class="control-btn" id="sort-random">随机</button></div><div class="status-box" id="sort-status"></div>`,`<span>比较与交换</span><span class="step-controls"><button id="sort-prev">←</button><span id="sort-count">0 / 0</span><button id="sort-next">→</button><button id="sort-play">播放</button></span>`,`<div class="bar-chart" id="bar-chart"></div>`);let steps=[],step=0,timer;
+function renderSorting(root){root.innerHTML=workspace(`<h2>ARRAY CONTROLS</h2><div class="field"><label for="sort-values">数字序列</label><textarea id="sort-values" rows="4">42, 17, 8, 56, 33, 21, 64, 12, 48, 29</textarea></div><div class="field"><label for="sort-type">排序算法</label><select id="sort-type"><option value="quick">快速排序</option><option value="merge">归并排序</option><option value="bubble">冒泡排序</option><option value="insertion">插入排序</option><option value="selection">选择排序</option><option value="shell">希尔排序</option></select></div><div class="button-row"><button class="control-btn accent" id="sort-build">载入</button><button class="control-btn" id="sort-random">随机</button></div><div class="status-box" id="sort-status"></div>`,`<span>比较与交换</span><span class="step-controls"><button id="sort-prev">←</button><span id="sort-count">0 / 0</span><button id="sort-next">→</button><button id="sort-play">播放</button></span>`,`<div class="bar-chart" id="bar-chart"></div>`);let steps=[],step=0,timer;
   const rebuild=()=>{clearInterval(timer);let values=$("#sort-values").value.split(/[,，\s]+/).map(Number).filter(Number.isFinite).slice(0,24);if(!values.length)values=[1];steps=sortingSteps(values,$("#sort-type").value);step=0;draw();};const draw=()=>{const s=steps[step],max=Math.max(...s.a,1),min=Math.min(...s.a,0),range=max-min||1;$("#bar-chart").innerHTML=s.a.map((v,i)=>`<div class="bar-item ${s.active.includes(i)?"active":""} ${s.sorted?"sorted":""}" style="height:${32+(v-min)/range*330}px"><span>${v}</span></div>`).join("");$("#sort-count").textContent=`${step} / ${steps.length-1}`;$("#sort-status").innerHTML=`<strong>${$("#sort-type").selectedOptions[0].text}</strong><br>${s.text}`;};$("#sort-next").onclick=()=>{step=Math.min(steps.length-1,step+1);draw();};$("#sort-prev").onclick=()=>{step=Math.max(0,step-1);draw();};$("#sort-build").onclick=rebuild;$("#sort-random").onclick=()=>{$("#sort-values").value=Array.from({length:12},()=>Math.floor(Math.random()*90)+5).join(", ");rebuild();};$("#sort-play").onclick=()=>{if(timer){clearInterval(timer);timer=null;$("#sort-play").textContent="播放";return;}$("#sort-play").textContent="暂停";timer=setInterval(()=>{if(step>=steps.length-1){clearInterval(timer);timer=null;$("#sort-play").textContent="播放";return;}step++;draw();},260);};rebuild();}
 
 function route() {
